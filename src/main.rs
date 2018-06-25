@@ -6,6 +6,9 @@ use sfml::window::*;
 
 const WIN_SIZE: (u32, u32) = (800, 600);
 const WIN_TITLE: &str = "polynomial-renderer";
+const POINT_COLOR: Color = Color::CYAN;
+const LEG_COLOR: Color = Color::MAGENTA;
+const PATH_COLOR: Color = Color::WHITE;
 
 fn main() {
 	let mut win = RenderWindow::new(WIN_SIZE, WIN_TITLE,
@@ -43,70 +46,40 @@ fn render_curve(points: &[Vector2f; 3]) -> VertexArray {
 		
 		println!("{:?}", factor);
 		
-		let point1 = interpolate_magenta(factor, points[0], points[1]);
-		vtx_arr.append(&point1);
+		let point1 = interpolate(factor, points[0], points[1]);
+        vtx_arr.append(&vtx_color(point1, LEG_COLOR));
 		
-		let point2 = interpolate_magenta(factor, points[2], points[0]);
-		vtx_arr.append(&point2);
+		let point2 = interpolate(factor, points[2], points[0]);
+        vtx_arr.append(&vtx_color(point2, LEG_COLOR));
 		
-		let curve_point = interpolate_cyan(1.0 - factor,
-			point1.position, point2.position);
-		vtx_arr.append(&curve_point);
+		let curve_point = interpolate(1.0 - factor, point1, point2);
+		vtx_arr.append(&vtx(curve_point));
 	}
 	
 	for i in points {
-		vtx_arr.append(&vtx(*i))
+		vtx_arr.append(&vtx_color(*i, POINT_COLOR))
 	}
 	
 	vtx_arr
 }
 
-fn interpolate<V: Into<Vector2f>>(factor: f32, a: V, b: V) -> Vertex {
+fn interpolate<V: Into<Vector2f>>(factor: f32, a: V, b: V) -> Vector2f {
 	let (a, b) = (a.into(), b.into());
 	
 	let factor_a = 1.0 - factor;
 	let factor_b = factor;
 	
-	vtx(a * factor_a + b * factor_b)
-}
-
-fn interpolate_cyan<V: Into<Vector2f>>(factor: f32, a: V, b: V) -> Vertex {
-	let (a, b) = (a.into(), b.into());
-	
-	let factor_a = 1.0 - factor;
-	let factor_b = factor;
-	
-	vtx_cyan(a * factor_a + b * factor_b)
-}
-
-fn interpolate_magenta<V: Into<Vector2f>>(factor: f32, a: V, b: V) -> Vertex {
-	let (a, b) = (a.into(), b.into());
-	
-	let factor_a = 1.0 - factor;
-	let factor_b = factor;
-	
-	vtx_magenta(a * factor_a + b * factor_b)
+	a * factor_a + b * factor_b
 }
 
 fn vtx<V: Into<Vector2f>>(coords: V) -> Vertex {
-	Vertex {
-		position: coords.into(),
-		..Default::default()
-	}
+	vtx_color(coords, PATH_COLOR)
 }
 
-fn vtx_cyan<V: Into<Vector2f>>(coords: V) -> Vertex {
-	Vertex {
-		position: coords.into(),
-		color: Color::CYAN,
-		..Default::default()
-	}
-}
-
-fn vtx_magenta<V: Into<Vector2f>>(coords: V) -> Vertex {
-	Vertex {
-		position: coords.into(),
-		color: Color::MAGENTA,
-		..Default::default()
-	}
+fn vtx_color<V: Into<Vector2f>>(coords: V, color: Color) -> Vertex {
+    Vertex {
+        position: coords.into(),
+        color,
+        .. Default::default()
+    }
 }
