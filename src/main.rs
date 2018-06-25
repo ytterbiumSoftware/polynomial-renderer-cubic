@@ -39,7 +39,7 @@ fn main() {
 }
 
 fn render_curve(points: &[Vector2f; 3]) -> VertexArray {
-	let mut vtx_arr = VertexArray::new(PrimitiveType::Points, 1024);
+	let mut vtx_arr = VertexArray::new(PrimitiveType::LineStrip, 0);
 	
 	for f in 0..101 {
 		let factor = f as f32 / 100.;
@@ -47,18 +47,25 @@ fn render_curve(points: &[Vector2f; 3]) -> VertexArray {
 		println!("{:?}", factor);
 		
 		let point1 = interpolate(factor, points[0], points[1]);
-        vtx_arr.append(&vtx_color(point1, LEG_COLOR));
+        //vtx_arr.append(&vtx_color(point1, LEG_COLOR));
 		
 		let point2 = interpolate(factor, points[2], points[0]);
-        vtx_arr.append(&vtx_color(point2, LEG_COLOR));
+        //vtx_arr.append(&vtx_color(point2, LEG_COLOR));
 		
-		let curve_point = interpolate(1.0 - factor, point1, point2);
+		let curve_point = interpolate(factor, point2, point1);
 		vtx_arr.append(&vtx(curve_point));
 	}
 	
-	for i in points {
+	/*for i in points {
 		vtx_arr.append(&vtx_color(*i, POINT_COLOR))
-	}
+	}*/
+    
+    //let c = vtx_arr.vertex_count() - 1;
+    //vtx_arr.resize(c);
+    
+    //for i in vtx_arr.vertices() {
+    //    println!("{:?}", *i);
+    //}
 	
 	vtx_arr
 }
