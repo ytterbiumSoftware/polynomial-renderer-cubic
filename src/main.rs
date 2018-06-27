@@ -18,8 +18,8 @@ fn main() {
 	
 	let vertex_array = render_curve(&[
 		Vector2f::new(200., 200.),
-		Vector2f::new(100., 300.),
-		Vector2f::new(400., 400.),
+		Vector2f::new(300., 400.),
+		Vector2f::new(500., 500.),
 	]);
 	
 	'game: loop {
@@ -46,10 +46,10 @@ fn render_curve(points: &[Vector2f; 3]) -> VertexArray {
 		
 		println!("{:?}", factor);
 		
-		let point1 = interpolate(factor, points[0], points[1]);
+		let point1 = interpolate(factor, points[1], points[0]);
         //vtx_arr.append(&vtx_color(point1, LEG_COLOR));
 		
-		let point2 = interpolate(factor, points[2], points[0]);
+		let point2 = interpolate(factor, points[2], points[1]);
         //vtx_arr.append(&vtx_color(point2, LEG_COLOR));
 		
 		let curve_point = interpolate(factor, point2, point1);
