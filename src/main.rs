@@ -11,6 +11,7 @@ const WIN_TITLE: &str = "polynomial-renderer";
 //const LEG2_COLOR: Color = Color::YELLOW;
 const PATH_COLOR: Color = Color::WHITE;
 const STEPS: u32 = 100;
+const TEXTURE_PATH: &str = "ground.png";
 
 fn main() {
     let settings = ContextSettings {
@@ -22,6 +23,8 @@ fn main() {
 		Default::default(), &settings);
 	
 	win.set_vertical_sync_enabled(true);
+    
+    let tex = Texture::from_file(TEXTURE_PATH).unwrap();
 	
 	let mut curve = render_curve(&[
 		(0.,   400.),
@@ -33,7 +36,7 @@ fn main() {
     curve.push(Vector2f::new(0.,   1200.));
     curve.push(Vector2f::new(800., 1200.));
 	
-    let shape = create_shape(&curve);
+    let shape = create_shape(&curve, &tex);
     
 	'game: loop {
 		win.clear(&Color::BLACK);
@@ -93,8 +96,8 @@ fn interpolate<V: Into<Vector2f>>(factor: f32, a: V, b: V) -> Vector2f {
 	a * factor_a + b * factor_b
 }
 
-fn create_shape(vertices: &[Vector2f]) -> ConvexShape {
-    let mut s = ConvexShape::new(vertices.len() as u32);
+fn create_shape<'a>(vertices: &[Vector2f], texture: &'a TextureRef) -> ConvexShape<'a> {
+    let mut s = ConvexShape::with_texture(vertices.len() as u32, texture);
     s.set_outline_color(&PATH_COLOR);
     
     for (i, val) in vertices.iter().enumerate() {
