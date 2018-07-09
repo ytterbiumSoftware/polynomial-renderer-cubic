@@ -10,23 +10,34 @@ const WIN_TITLE: &str = "polynomial-renderer";
 //const LEG1_COLOR: Color = Color::MAGENTA;
 //const LEG2_COLOR: Color = Color::YELLOW;
 const PATH_COLOR: Color = Color::WHITE;
+const STEPS: u32 = 100;
 
 fn main() {
+    let settings = ContextSettings {
+        antialiasing_level: 8,
+        ..Default::default()
+    };
+    
 	let mut win = RenderWindow::new(WIN_SIZE, WIN_TITLE,
-		Default::default(), &Default::default());
+		Default::default(), &settings);
 	
 	win.set_vertical_sync_enabled(true);
 	
-	let vertex_array = render_curve(&[
-		Vector2f::new(100., 100.),
-		Vector2f::new(700., 200.),
-		Vector2f::new(150., 350.),
-		Vector2f::new(550., 500.),
+	let mut curve = render_curve(&[
+		(0.,   400.),
+		(200., 200.),
+		(600., 600.),
+		(800., 400.),
 	]);
+    
+    curve.push(Vector2f::new(0.,   600.));
+    curve.push(Vector2f::new(800., 600.));
 	
+    let shape = create_shape(&curve);
+    
 	'game: loop {
 		win.clear(&Color::BLACK);
-		win.draw_vertex_array(&vertex_array, Default::default());
+        win.draw_convex_shape(&shape, Default::default());
 		win.display();
 		
 		while let Some(ev) = win.poll_event() {
@@ -40,31 +51,23 @@ fn main() {
 	}
 }
 
-fn render_curve(points: &[Vector2f; 4]) -> VertexArray {
-	let mut vtx_arr = VertexArray::new(PrimitiveType::LineStrip, 0);
-	
-	for f in 0..101 {
-		let factor = f as f32 / 100.;
-		
-		println!("{:?}", factor);
+fn render_curve<V>(points: &[V; 4]) -> Vec<Vector2f>
+    where V: Into<Vector2f> + Copy {
+    
+	let mut curve = Vec::new();
+    
+	for f in 0..(STEPS + 1) {
+		let factor = f as f32 / STEPS as f32;
 		
 		let point1a = interpolate(factor, points[1], points[0]);
-        //vtx_arr.append(&vtx_color(point1a, LEG1_COLOR));
-		
 		let point2a = interpolate(factor, points[2], points[1]);
-        //vtx_arr.append(&vtx_color(point2a, LEG1_COLOR));
-        
         let point3a = interpolate(factor, points[3], points[2]);
-        //vtx_arr.append(&vtx_color(point3a, LEG1_COLOR));
         
         let point1b = interpolate(factor, point2a, point1a);
-        //vtx_arr.append(&vtx_color(point1b, LEG2_COLOR));
-        
         let point2b = interpolate(factor, point3a, point2a);
-        //vtx_arr.append(&vtx_color(point2b, LEG2_COLOR));
 		
 		let curve_point = interpolate(factor, point2b, point1b);
-		vtx_arr.append(&vtx(curve_point));
+		curve.push(curve_point);
 	}
 	
 	/*for i in points {
@@ -78,7 +81,7 @@ fn render_curve(points: &[Vector2f; 4]) -> VertexArray {
     //    println!("{:?}", *i);
     //}
 	
-	vtx_arr
+	curve
 }
 
 fn interpolate<V: Into<Vector2f>>(factor: f32, a: V, b: V) -> Vector2f {
@@ -90,14 +93,13 @@ fn interpolate<V: Into<Vector2f>>(factor: f32, a: V, b: V) -> Vector2f {
 	a * factor_a + b * factor_b
 }
 
-fn vtx<V: Into<Vector2f>>(coords: V) -> Vertex {
-	vtx_color(coords, PATH_COLOR)
-}
-
-fn vtx_color<V: Into<Vector2f>>(coords: V, color: Color) -> Vertex {
-    Vertex {
-        position: coords.into(),
-        color,
-        .. Default::default()
+fn create_shape(vertices: &[Vector2f]) -> ConvexShape {
+    let mut s = ConvexShape::new(vertices.len() as u32);
+    s.set_outline_color(&PATH_COLOR);
+    
+    for (i, val) in vertices.iter().enumerate() {
+        s.set_point(i as u32, *val)
     }
+    
+    s
 }
