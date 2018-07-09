@@ -30,8 +30,8 @@ fn main() {
 		(800., 400.),
 	]);
     
-    curve.push(Vector2f::new(0.,   600.));
-    curve.push(Vector2f::new(800., 600.));
+    curve.push(Vector2f::new(0.,   1200.));
+    curve.push(Vector2f::new(800., 1200.));
 	
     let shape = create_shape(&curve);
     
